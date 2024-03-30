@@ -44,11 +44,19 @@ class Plant:
     time_high = Time()
     min_w, max_w = 0, 0
     min_b, max_b = 0, 0
-
+    eal_time = 0
     def add_water(self, w):
         self.w += w
     def add_light(self, b):
         self.b += b
+    def eal_check(self):
+        f =  max(self.max_w < self.w, self.w > self.min_w,
+                 self.max_b < self.b, self.min_b > self.b)
+        self.health += f
+        self.eal_time += (self.health and not f)
+        if self.eal_time == 3:
+            self.health -= 1
+            self.eal_time = 0
     def get_high(self):
         self.w -= self.water_high
         self.b -= self.light_high
@@ -59,9 +67,6 @@ class Plant:
             t-=self.time_high
             self.get_high()
         self.lost_time = t
-    def eal_check(self):
-        f =  max(self.max_w < self.w, self.w > self.min_w,
-                 self.max_b < self.b, self.min_b > self.b)
 
 
 
@@ -92,3 +97,47 @@ class Greenhouse:
     def __init__(self):
         self.holder = {}
         self.time_exist = Time()
+    def tend_to_plants(self):
+        for i in self.holder.keys():
+            tree = self.holder[i]
+            if tree.w <= tree.min_w:
+                tree.w = tree.max_w - 1
+            if tree.b <= tree.min_b:
+                tree.b = tree.max_b -1
+    def add(self, tree_type, name, w, b):
+        tree = tree_type(name, w, b, self.time_exist)
+        self.holder[name] = tree
+        return tree
+    def find(self, name):
+        if name in self.holder.keys():
+            return self.holder[name]
+        else:
+            return 0
+    def add_w(self, name, w):
+        tree = self.find(name)
+        if tree!=0:
+            tree.add_water(w)
+        return tree
+    def add_b(self, name, b):
+        tree = self.find(name)
+        if tree!=0:
+            tree.add_ligth(b)
+        return tree
+    def remove(self, name):
+        tree = self.find(name)
+        if tree!=0:
+            self.holder.pop(name)
+        return tree
+    def time_skip(self, t:Time):
+        t += Time(0, self.time_exist.m)
+        self.time_exist -= Time(0, self.time_exist.m)
+        while t.h>0:
+            t -= Time(1, 0)
+            self.time_exist += Time(1, 0)
+            for i in self.holder.keys():
+                self.holder[i].time_skip(Time(0, 30))
+                self.holder[i].eal_check()
+                self.holder[i].time_skip(Time(0, 30))
+            self.tend_to_plants()
+            for i in self.holder.keys(): self.holder[i].eal_check()
+        self.time_exist += t
