@@ -38,6 +38,9 @@ class Plant:
         self.health = 0
         self.lost_time = Time()
         self.health_time = 0
+        self.f = 0
+        self.time_old = Time()
+        self.days = Time()
     water_high = 0
     light_high = 0
     percent_high = 0
@@ -45,11 +48,24 @@ class Plant:
     min_w, max_w = 0, 0
     min_b, max_b = 0, 0
     eal_time = 0
+    min_high = 0
+    last_child = Time()
+    max_age = Time()
+    def check_high(self):
+        if self.f == 0:
+            self.f = self.height>=self.min_high
+            if self.f == 1:
+                self.time_old = Time()
+
+        return self.f
+    def child(self):
+        pass
     def add_water(self, w):
         self.w += w
     def add_light(self, b):
         self.b += b
     def eal_check(self):
+        if self.health >= 3: return self.health
         f =  max(self.max_w < self.w, self.w > self.min_w,
                  self.max_b < self.b, self.min_b > self.b)
         self.health += f
@@ -57,6 +73,7 @@ class Plant:
         if self.eal_time == 3:
             self.health -= 1
             self.eal_time = 0
+        return self.health
     def get_high(self):
         self.w -= self.water_high
         self.b -= self.light_high
@@ -66,13 +83,23 @@ class Plant:
         while t >= self.time_high:
             t-=self.time_high
             self.get_high()
+            if self.f == 0:
+                self.check_high()
+            if self.f == 1:
+                self.last_child+=self.time_high
+                self.child()
         self.lost_time = t
+        if self.f == 1:
+            self.last_child += t
+
+
 
 
 
 class AppleTree(Plant):
     def __init__(self, name, w, b, t : Time):
         super().__init__(name, w, b, t)
+        self.count_apples = 0
 
     water_high = 10
     light_high = 8
@@ -80,6 +107,18 @@ class AppleTree(Plant):
     time_high = Time(0, 40)
     min_w, max_w = 10, 90
     min_b, max_b = 10, 60
+    min_high = 80
+    max_age = Time(240, 0)
+
+    def child(self):
+        if self.last_child >= Time(24, 0):
+            self.last_child = Time()
+            a = randint(10, 20)
+            self.count_apples += a
+            self.days += Time(24,0)
+            if self.days >= self.max_age:
+                self.health = 4
+            return a
 
 class Orchid(Plant):
     def __init__(self, name, w, b, t: Time):
@@ -92,6 +131,12 @@ class Orchid(Plant):
     time_high = Time(0, 20)
     min_w, max_w = 15, 55
     min_b, max_b = 30, 80
+    min_high = 90
+    max_age = Time(48, 0)
+    def child(self):
+        if self.days >= self.max_age:
+            self.health = 4
+        return self.color
 
 class Greenhouse:
     def __init__(self):
@@ -141,3 +186,30 @@ class Greenhouse:
             self.tend_to_plants()
             for i in self.holder.keys(): self.holder[i].eal_check()
         self.time_exist += t
+
+
+f = 1
+g = Greenhouse()
+tp = {
+    'Орхидея' : Orchid,
+    'Яблоня' : AppleTree
+    }
+while f:
+    i = input().split()
+    a = i[0]
+    if a == 0:
+        f = 0
+    elif a == 1:
+        h,m = map(int, i[1].split(':'))
+        g.time_skip(Time(h,m))
+    elif a == 2:
+        g.add(tp[i[1]], i[2], int(i[3]), int(i[4]))
+    elif a==3:
+        g.add_w(i[1], int(i[2]))
+    elif a==4:
+        g.add_b(i[1], int(i[2]))
+    elif a==5:
+        g.remove(i[1])
+    elif a==6:
+        g.find(i[1])
+
