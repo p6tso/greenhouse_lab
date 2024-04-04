@@ -194,22 +194,64 @@ tp = {
     'Орхидея' : Orchid,
     'Яблоня' : AppleTree
     }
+tp_rev = {
+    Orchid : 'Орхидея',
+    AppleTree : 'Яблоня'
+    }
+health = [
+    'Здоровое',
+    'Легкая болезнь',
+    'Тяжелая болезнь',
+    'Мертво',
+    'Естественная смерть'
+]
+colors = [
+    'красные',
+    'синие',
+    'желтые'
+]
 while f:
     i = input().split()
-    a = i[0]
+    a = int(i[0])
     if a == 0:
         f = 0
     elif a == 1:
+        t = g.time_exist
         h,m = map(int, i[1].split(':'))
         g.time_skip(Time(h,m))
+        print(f'Время изменилось с {t} на {g.time_exist}. Прошло {h} часов {m} минут')
     elif a == 2:
         g.add(tp[i[1]], i[2], int(i[3]), int(i[4]))
+        print(f'Посажена {i[1]} с наименованием \"{i[2]}\"!')
     elif a==3:
         g.add_w(i[1], int(i[2]))
     elif a==4:
         g.add_b(i[1], int(i[2]))
     elif a==5:
         g.remove(i[1])
+        print(f'Растение \"{i[1]}\" было вынесено из оранжереи')
     elif a==6:
-        g.find(i[1])
+        tree = g.find(i[1])
+        if tree!=0:
+            print(f'Статистика по \"{i[1]}\":')
+            print(f'Тип: {tp_rev[type(tree)]}')
+            print(f'Вода: {tree.min_w}<{tree.w}<{tree.max_w}')
+            print(f'Свет: {tree.min_b}<{tree.b}<{tree.max_b}')
+            print(f'Рост: {tree.height}%')
+            print(f'Состояние: {health[tree.health]}')
+            print(f'Посажено в {tree.birth_time}')
+            s = ''
+            if tree.f == 0:
+                if type(tree) == Orchid:
+                    s = 'Лепестки отсутствуют'
+                else:
+                    s = 'Не плодоносит'
+            else:
+                if type(tree) == Orchid:
+                    s = f'Имеет {colors[tree.color]} лепестки'
+                else:
+                    s = 'Плодоносит'
+            print(s)
+        else: print(f'Растение с именем \"{i[1]}\" отсутствует в оранжерее!')
+
 
