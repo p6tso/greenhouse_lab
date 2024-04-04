@@ -102,6 +102,7 @@ class AppleTree(Plant):
     def __init__(self, name, w, b, t: Time):
         super().__init__(name, w, b, t)
         self.count_apples = 0
+        self.last_app = 0
 
     water_high = 10
     light_high = 8
@@ -109,8 +110,17 @@ class AppleTree(Plant):
     time_high = Time(0, 40)
     min_w, max_w = 10, 90
     min_b, max_b = 10, 60
-    min_high = 100
+    min_high = 80
     max_old_time = Time(240, 0)
+    def time_skip(self, t: Time):
+        super().time_skip(t)
+        if self.f == 1:
+            if self.old_time.m == 0 and self.old_time.h % 24 == 0:
+                app = randint(10,20)
+                self.count_apples += app
+                self.last_app = app
+
+
 
 
 class Orchid(Plant):
@@ -125,7 +135,7 @@ class Orchid(Plant):
     min_w, max_w = 15, 55
     min_b, max_b = 30, 80
     min_high = 90
-    max_old_time = Time(48, 0)
+    max_old_time = Time(48, 40)
 
 
 class Greenhouse:
@@ -157,12 +167,14 @@ class Greenhouse:
         tree = self.find(name)
         if tree != 0:
             tree.add_water(w)
+            tree.eal_check()
         return tree
 
     def add_b(self, name, b):
         tree = self.find(name)
         if tree != 0:
             tree.add_ligth(b)
+            tree.eal_check()
         return tree
 
     def remove(self, name):
@@ -187,6 +199,8 @@ class Greenhouse:
         self.time_exist += t
 
 
+def isnt_exist(name):
+    print(print(f'Растение с именем \"{name}\" отсутствует в оранжерее!'))
 f = 1
 g = Greenhouse()
 tp = {
@@ -223,12 +237,16 @@ while f:
         g.add(tp[i[1]], i[2], int(i[3]), int(i[4]))
         print(f'Посажена {i[1]} с наименованием \"{i[2]}\"!')
     elif a == 3:
-        g.add_w(i[1], int(i[2]))
+        if g.add_w(i[1], int(i[2]))==0:
+            isnt_exist(i[1])
     elif a == 4:
-        g.add_b(i[1], int(i[2]))
+        if g.add_b(i[1], int(i[2]))==0:
+            isnt_exist(i[1])
     elif a == 5:
-        g.remove(i[1])
-        print(f'Растение \"{i[1]}\" было вынесено из оранжереи')
+        if g.remove(i[1])==0:
+            isnt_exist(i[1])
+        else:
+            print(f'Растение \"{i[1]}\" было вынесено из оранжереи')
     elif a == 6:
         tree = g.find(i[1])
         if tree != 0:
@@ -249,7 +267,7 @@ while f:
                 if tree.height < 80:
                     s = 'Не плодоносит'
                 else:
-                    s = 'Плодоносит'
+                    s = f'Дерево суммарно вырастило {tree.count_apples}, в последний раз {tree.last_app}'
             print(s)
         else:
-            print(f'Растение с именем \"{i[1]}\" отсутствует в оранжерее!')
+            isnt_exist(i[1])
