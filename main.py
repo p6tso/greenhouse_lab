@@ -87,15 +87,16 @@ class Plant:
             self.f = 1
 
     def time_skip(self, t: Time):
-        t += self.lost_time
-        while t >= self.time_high:
-            t -= self.time_high
-            self.get_high()
-            if self.f == 1:
-                self.old_time += self.time_high
-            if self.old_time >= self.max_old_time:
-                self.health = 4
-        self.lost_time = t
+        if self.health < 3:
+            t += self.lost_time
+            while t >= self.time_high:
+                t -= self.time_high
+                self.get_high()
+                if self.f == 1:
+                    self.old_time += self.time_high
+                if self.old_time >= self.max_old_time:
+                    self.health = 4
+            self.lost_time = t
 
 
 class AppleTree(Plant):
